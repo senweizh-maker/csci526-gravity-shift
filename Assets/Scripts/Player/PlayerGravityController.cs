@@ -114,14 +114,22 @@ public class PlayerGravityController : MonoBehaviour
         );
     }
 
+    private Vector2 GetTangent()
+    {
+        if (Mathf.Abs(gravityDirection.y) > 0.5f)
+        {
+            return Vector2.right;
+        }
+        else
+        {
+            return Vector2.up;
+        }
+    }
+
     private void ApplyMovement()
     {
         // 与重力垂直的方向就是“地面方向”
-        Vector2 tangent =
-            new Vector2(
-                -gravityDirection.y,
-                gravityDirection.x
-            );
+        Vector2 tangent = GetTangent();
 
         float gravitySpeed =
             Vector2.Dot(
@@ -144,11 +152,7 @@ public class PlayerGravityController : MonoBehaviour
         if (!IsGrounded())
             return;
 
-        Vector2 tangent =
-            new Vector2(
-                -gravityDirection.y,
-                gravityDirection.x
-            );
+        Vector2 tangent = GetTangent();
 
         float tangentSpeed =
             Vector2.Dot(
