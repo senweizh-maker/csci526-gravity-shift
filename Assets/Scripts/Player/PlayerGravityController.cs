@@ -7,8 +7,10 @@ public class PlayerGravityController : MonoBehaviour
 {
     public float moveSpeed = 5f;
     public float jumpSpeed = 7f;
+    public float maxSpeed = 12f;
     public float defaultGravityAcceleration = 20f;
     public float cellGravityAcceleration = 10f;
+    public float airDeceleration = 15f;
 
     public LayerMask groundLayer;
 
@@ -55,6 +57,14 @@ public class PlayerGravityController : MonoBehaviour
         }
     }
 
+    private void LimitSpeed()
+    {
+        if (rb.linearVelocity.magnitude > maxSpeed)
+        {
+            rb.linearVelocity = rb.linearVelocity.normalized * maxSpeed;
+        }
+    }
+
     private void FixedUpdate()
     {
         UpdateGravity();
@@ -66,6 +76,8 @@ public class PlayerGravityController : MonoBehaviour
         ApplyJump();
 
         RotateVisual();
+
+        LimitSpeed();
     }
 
     private void UpdateGravity()
@@ -128,18 +140,53 @@ public class PlayerGravityController : MonoBehaviour
 
     private void ApplyMovement()
     {
-        // 与重力垂直的方向就是“地面方向”
-        Vector2 tangent = GetTangent();
+        Vector2 velocity = rb.linearVelocity;
+        float gravitySpeed = Vector2.Dot(velocity, gravityDirection);
+        Vector2 gravityVelocity = gravityDirection * gravitySpeed;
+        Vector2 perpVelocity = velocity - gravityVelocity;
 
-        float gravitySpeed =
-            Vector2.Dot(
-                rb.linearVelocity,
-                gravityDirection
-            );
+        bool horizontalGravity = Mathf.Abs(gravityDirection.x) > 0.5f;
 
-        rb.linearVelocity =
-            tangent * (moveInput * moveSpeed)
-            + gravityDirection * gravitySpeed;
+        if (horizontalGravity)
+        {
+
+            if (gravitySpeed < 0f)
+            {
+                gravitySpeed = 0f;
+            }
+
+            if (moveInput != 0f)
+            {
+                float inputDirection = Mathf.Sign(moveInput);
+                float gravityDirSign = Mathf.Sign(gravityDirection.x);
+
+                if (Mathf.Approximately(inputDirection, gravityDirSign))
+                {
+                    float boostedSpeed = Mathf.Abs(moveInput) * moveSpeed;
+                    gravitySpeed += Mathf.Max(gravitySpeed, boostedSpeed);
+                }
+                
+            }
+
+            rb.linearVelocity = gravityDirection * gravitySpeed + perpVelocity;
+        }
+        else
+        {
+            
+            float currentHorizontalSpeed = velocity.x;
+            float newHorizontalSpeed;
+
+            if (moveInput != 0f)
+            {
+                newHorizontalSpeed = moveInput * moveSpeed;
+            }
+            else
+            {
+                newHorizontalSpeed = Mathf.MoveTowards(currentHorizontalSpeed, 0f, airDeceleration * Time.fixedDeltaTime);
+            }
+
+            rb.linearVelocity = new Vector2(newHorizontalSpeed, 0f) + gravityVelocity;
+        }
     }
 
     private void ApplyJump()

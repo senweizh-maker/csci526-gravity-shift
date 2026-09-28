@@ -1520,7 +1520,7 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 1
+  m_Mass: 10
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 0
@@ -1549,8 +1549,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerGravityController
   moveSpeed: 5
   jumpSpeed: 5
+  maxSpeed: 12
   defaultGravityAcceleration: 12
   cellGravityAcceleration: 6
+  airDeceleration: 28
   groundLayer:
     serializedVersion: 2
     m_Bits: 264
@@ -2665,9 +2667,9 @@ Rigidbody2D:
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0
-  m_Mass: 50
-  m_LinearDamping: 2
-  m_AngularDamping: 2
+  m_Mass: 70
+  m_LinearDamping: 0.2
+  m_AngularDamping: 0.2
   m_GravityScale: 0
   m_Material: {fileID: 0}
   m_IncludeLayers:
@@ -5021,7 +5023,7 @@ CompositeCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 6200000, guid: a6cce3cadf2164b7da4779a4ef4dc592, type: 2}
+  m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
