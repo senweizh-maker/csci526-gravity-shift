@@ -3929,6 +3929,7 @@ MonoBehaviour:
   startPanel: {fileID: 1830644835}
   gameHUD: {fileID: 169003042}
   winPanel: {fileID: 606328215}
+  nextLevelButton: {fileID: 0}
   playerController: {fileID: 522163916}
   playerRigidbody: {fileID: 522163915}
 --- !u!4 &886900872
