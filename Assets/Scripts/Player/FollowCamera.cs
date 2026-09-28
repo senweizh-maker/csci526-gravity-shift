@@ -12,9 +12,9 @@ public class FollowCamera : MonoBehaviour
     [Header("Zoom")]
     [Tooltip("Orthographic size while following the player. Match your Level 1 camera size.")]
     public float followSize = 4f;
-    [Tooltip("Orthographic size while holding the planning key.")]
+    [Tooltip("Orthographic size while holding the planning key (Z).")]
     public float planningSize = 8f;
-    [Tooltip("Optional. Camera centers here while zoomed out (e.g. the middle of the tunnel).")]
+    [Tooltip("Optional. Camera centers here while Z is held.")]
     public Transform planningFocus;
     public float zoomSmoothTime = 0.2f;
  
@@ -27,9 +27,27 @@ public class FollowCamera : MonoBehaviour
     private Vector3 moveVelocity;
     private float sizeVelocity;
  
+    private bool hasZoneOverride;
+    private float zoneSize;
+    private Vector2 zoneFocus;
+ 
     private void Awake()
     {
         cam = GetComponent<Camera>();
+    }
+ 
+    // Called by CameraZone when the player enters it
+    public void SetZoneOverride(float size, Vector2 focus)
+    {
+        hasZoneOverride = true;
+        zoneSize = size;
+        zoneFocus = focus;
+    }
+ 
+    // Called by CameraZone when the player leaves it
+    public void ClearZoneOverride()
+    {
+        hasZoneOverride = false;
     }
  
     private void LateUpdate()
@@ -41,14 +59,26 @@ public class FollowCamera : MonoBehaviour
             Keyboard.current != null &&
             Keyboard.current.zKey.isPressed;
  
-        float targetSize = planning ? planningSize : followSize;
+        float targetSize;
+        Vector3 focus;
  
-        Vector3 focus =
-            (planning && planningFocus != null)
-                ? planningFocus.position
-                : target.position;
+        if (planning)
+        {
+            targetSize = planningSize;
+            focus = planningFocus != null ? planningFocus.position : target.position;
+        }
+        else if (hasZoneOverride)
+        {
+            targetSize = zoneSize;
+            focus = zoneFocus;
+        }
+        else
+        {
+            targetSize = followSize;
+            focus = target.position;
+        }
  
-        
+        // Unscaled time so the camera still moves while Time.timeScale is 0
         float dt = Time.unscaledDeltaTime;
  
         cam.orthographicSize = Mathf.SmoothDamp(

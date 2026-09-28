@@ -29,9 +29,9 @@ public class GravityGridGenerator : MonoBehaviour
         {
             for (int x = 0; x < width; x++)
             {
-                Vector3 position = new Vector3(
-                    x + 0.5f,
-                    y + 0.5f,
+                Vector3 position = transform.position + new Vector3(
+                    (x + 0.5f) * cellSize,
+                    (y + 0.5f) * cellSize,
                     0f
                 );
 
