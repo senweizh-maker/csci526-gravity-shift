@@ -14,7 +14,7 @@ public class CameraZone : MonoBehaviour
  
     private void Reset()
     {
-        // Runs when the script is first added in the Editor
+        
         GetComponent<BoxCollider2D>().isTrigger = true;
     }
  

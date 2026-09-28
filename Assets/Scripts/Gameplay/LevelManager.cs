@@ -11,6 +11,7 @@ public class LevelManager : MonoBehaviour
     public GameObject startPanel;
     public GameObject gameHUD;
     public GameObject winPanel;
+    public GameObject nextLevelButton;
 
     [Header("Player")]
     public PlayerGravityController playerController;
@@ -116,6 +117,15 @@ public class LevelManager : MonoBehaviour
 
         Time.timeScale = 0f;
 
+        if (nextLevelButton != null)
+        {
+            bool hasNext =
+                SceneManager.GetActiveScene().buildIndex + 1
+                < SceneManager.sceneCountInBuildSettings;
+
+            nextLevelButton.SetActive(hasNext);
+        }
+
         if (gameHUD != null)
             gameHUD.SetActive(false);
 
@@ -150,6 +160,21 @@ public class LevelManager : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.4f);
 
         RestartLevel();
+    }
+
+
+    public void LoadNextLevel()
+    {
+        // Show the start screen on the new level instead of skipping it
+        restartIntoGame = false;
+        Time.timeScale = 1f;
+
+        int next = SceneManager.GetActiveScene().buildIndex + 1;
+
+        if (next < SceneManager.sceneCountInBuildSettings)
+            SceneManager.LoadScene(next);
+        else
+            SceneManager.LoadScene(0);
     }
 
     public void RestartLevel()

@@ -5,26 +5,39 @@ using UnityEngine;
 public class GravityBoxController : MonoBehaviour
 {
     [Header("Gravity")]
+    [Tooltip("Pull toward the ground when no active gravity cell touches the box.")]
     public float gravityAcceleration = 20f;
-    public float maxSpeed = 10f;
+ 
+    [Tooltip("Pull added by EACH active cell touching the box. Cells stack.")]
+    public float accelerationPerCell = 12f;
+ 
+    [Tooltip("Most cells' worth of pull that can stack on the box.")]
+    public float maxCellStack = 5f;
+ 
+    public float maxSpeed = 14f;
 
     [Header("Crush")]
     public LayerMask solidLayer;
     public float crushCheckMargin = 0.12f;
 
     private Rigidbody2D rb;
+    private BoxCollider2D boxCollider;
 
-    private GravityCell currentGravityCell;
+
 
     private Vector2 gravityDirection = Vector2.down;
+
+    private Vector2 gravityPull = Vector2.down * 20f;
 
     public Vector2 GravityDirection => gravityDirection;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        boxCollider = GetComponent<BoxCollider2D>();
 
         rb.gravityScale = 0;
+        gravityPull = Vector2.down * gravityAcceleration;
     }
 
     private void FixedUpdate()
@@ -38,36 +51,42 @@ public class GravityBoxController : MonoBehaviour
     {
         if (GravityGridManager.Instance == null)
         {
-            gravityDirection = Vector2.down;
+            UseDefaultGravity();
             return;
         }
 
-        currentGravityCell =
-            GravityGridManager.Instance.GetCellAtPoint(
-                rb.worldCenterOfMass,
-                currentGravityCell
-            );
+        Bounds bounds = boxCollider.bounds;
+        bounds.Expand(new Vector3(-0.1f, -0.1f, 0f));
+ 
+        int count;
+        Vector2 net = GravityGridManager.Instance.GetNetGravityInBounds(bounds, out count);
 
-        if (currentGravityCell != null)
+        if (count == 0)
         {
-            gravityDirection =
-                currentGravityCell.GetGravityVector();
+            UseDefaultGravity();
+            return;
         }
-        else
-        {
-            gravityDirection = Vector2.down;
-        }
+
+        net = Vector2.ClampMagnitude(net, maxCellStack);
+ 
+        gravityPull = net * accelerationPerCell + Vector2.down * gravityAcceleration;
+ 
+        if (net.sqrMagnitude > 0.0001f)
+            gravityDirection = net.normalized;
     }
 
+
+    private void UseDefaultGravity()
+    {
+        gravityDirection = Vector2.down;
+        gravityPull = Vector2.down * gravityAcceleration;
+    }
+ 
     private void ApplyGravity()
     {
-        rb.AddForce(
-            gravityDirection
-            * gravityAcceleration
-            * rb.mass,
-            ForceMode2D.Force
-        );
+        rb.AddForce(gravityPull * rb.mass, ForceMode2D.Force);
     }
+
 
     private void LimitSpeed()
     {

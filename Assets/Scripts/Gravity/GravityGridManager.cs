@@ -171,6 +171,34 @@ public class GravityGridManager : MonoBehaviour
         return null;
     }
 
+    public Vector2 GetNetGravityInBounds(Bounds bounds, out int count)
+    {
+        Vector2 net = Vector2.zero;
+        count = 0;
+
+        foreach (GravityCell cell in activeCells)
+        {
+            Collider2D col = cell.GetComponent<Collider2D>();
+
+            if (col == null)
+                continue;
+
+            Bounds cb = col.bounds;
+
+            bool overlaps =
+                bounds.min.x < cb.max.x && bounds.max.x > cb.min.x &&
+                bounds.min.y < cb.max.y && bounds.max.y > cb.min.y;
+
+            if (overlaps)
+            {
+                net += cell.GetGravityVector();
+                count++;
+            }
+        }
+
+        return net;
+    }
+
     public void AddCapacity(int amount)
     {
         maxActiveCells += amount;
